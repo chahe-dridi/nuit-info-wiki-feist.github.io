@@ -1,0 +1,52 @@
+ <!DOCTYPE html>
+ <html lang="en">
+ <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+ </head>
+ <body>
+    <h1>Data</h1>
+    <ul id ="results">
+
+    </ul>
+ </body>
+ <script>
+    class SPARQLQueryDispatcher {
+	constructor( endpoint ) {
+		this.endpoint = endpoint;
+	}
+
+	query( sparqlQuery ) {
+		const fullUrl = this.endpoint + '?query=' + encodeURIComponent( sparqlQuery );
+		const headers = { 'Accept': 'application/sparql-results+json' };
+
+		return fetch( fullUrl, { headers } ).then( body => body.json() );
+	}
+}
+
+const endpointUrl = 'https://query.wikidata.org/sparql';
+const sparqlQuery = `SELECT ?climate ?title ?image WHERE {
+  ?climate wdt:P921 wd:Q125928;
+    wdt:P31 wd:Q13442814;
+    rdfs:label ?title.
+
+  FILTER((LANG(?title)) = "fr")
+
+}
+limit 200`;
+
+const queryDispatcher = new SPARQLQueryDispatcher( endpointUrl );
+queryDispatcher.query( sparqlQuery ).then( function(data){
+    var results = data.results.bindings;
+    for(var result in results){
+        console.log(results[result])
+    document.querySelector("#results").innerHTML+=
+    '<li><a href = "'
+        +results[result].climate.value + '">'
+    +results[result].title.value+'</li>';
+    }
+});
+
+ </script>
+ </html>
